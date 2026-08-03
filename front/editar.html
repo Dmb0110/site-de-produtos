@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Editar produto</title>
+    <style>
+        :root { font-family: Arial, sans-serif; background: #f4f7fb; color: #172033; }
+        body { margin: 0; padding: 24px; }
+        .voltar { color: #155eef; font-weight: bold; }
+        main { width: min(92%, 560px); margin: 64px auto 0; padding: 32px; background: #fff; border: 1px solid #dce3ee; border-radius: 12px; box-shadow: 0 12px 32px rgba(23, 32, 51, .08); }
+        form { display: grid; gap: 16px; }
+        label { display: grid; gap: 6px; font-weight: bold; }
+        select, input, button { box-sizing: border-box; padding: 11px; border: 1px solid #b8c2d1; border-radius: 6px; font: inherit; }
+        button { background: #155eef; color: #fff; border: 0; cursor: pointer; }
+        #status { color: #5c667a; }
+        .erro { color: #b42318 !important; }
+        .sucesso { color: #067647 !important; }
+    </style>
+    <link rel="stylesheet" href="/front/styles.css">
+</head>
+<body>
+    <a class="voltar" href="index.html">&#8592; Voltar</a>
+    <main>
+        <h1>Trocar nome ou preço</h1>
+        <p id="status">Carregando produtos...</p>
+        <form id="formulario" hidden>
+            <label for="produto">Produto
+                <select id="produto" required></select>
+            </label>
+            <label for="nome">Nome
+                <input id="nome" required maxlength="100">
+            </label>
+            <label for="preco">Preço
+                <input id="preco" type="number" min="0" step="0.01" required>
+            </label>
+            <button type="submit">Salvar alterações</button>
+        </form>
+    </main>
+    <script>
+        const status = document.querySelector('#status');
+        const formulario = document.querySelector('#formulario');
+        const produtoSelect = document.querySelector('#produto');
+        const nomeInput = document.querySelector('#nome');
+        const precoInput = document.querySelector('#preco');
+        let produtos = [];
+
+        function selecionarProduto() {
+            const produto = produtos.find((item) => String(item.id) === produtoSelect.value);
+            if (produto) {
+                nomeInput.value = produto.nome;
+                precoInput.value = produto.preco;
+            }
+        }
+
+        async function carregarProdutos() {
+            try {
+                const resposta = await fetch('http://127.0.0.1:5000/produtos');
+                if (!resposta.ok) throw new Error('Não foi possível carregar os produtos.');
+                produtos = await resposta.json();
+
+                if (produtos.length === 0) {
+                    status.textContent = 'Nenhum produto cadastrado.';
+                    return;
+                }
+
+                produtos.forEach((produto) => {
+                    const opcao = document.createElement('option');
+                    opcao.value = produto.id;
+                    opcao.textContent = produto.nome;
+                    produtoSelect.appendChild(opcao);
+                });
+                formulario.hidden = false;
+                status.hidden = true;
+                selecionarProduto();
+            } catch (erro) {
+                status.textContent = erro.message;
+                status.className = 'erro';
+            }
+        }
+
+        produtoSelect.addEventListener('change', selecionarProduto);
+        formulario.addEventListener('submit', async (evento) => {
+            evento.preventDefault();
+            status.hidden = false;
+            status.className = '';
+            status.textContent = 'Salvando...';
+
+            try {
+                const resposta = await fetch(`http://127.0.0.1:5000/produtos/${produtoSelect.value}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ nome: nomeInput.value.trim(), preco: Number(precoInput.value) }),
+                });
+                if (!resposta.ok) throw new Error('Não foi possível atualizar o produto.');
+                status.textContent = 'Produto atualizado com sucesso.';
+                status.className = 'sucesso';
+            } catch (erro) {
+                status.textContent = erro.message;
+                status.className = 'erro';
+            }
+        });
+
+        carregarProdutos();
+    </script>
+</body>
+</html>

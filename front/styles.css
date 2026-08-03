@@ -1,0 +1,158 @@
+:root {
+    color-scheme: light;
+    --ink: #17252d;
+    --muted: #65737a;
+    --paper: #fffdf8;
+    --line: #e6ddd0;
+    --accent: #e36b45;
+    --accent-dark: #b94d2d;
+    --teal: #1b7a78;
+    --danger: #b8423b;
+    font-family: "Trebuchet MS", "Segoe UI", sans-serif;
+    color: var(--ink);
+    background: #f4eee5;
+}
+
+* { box-sizing: border-box; }
+
+body {
+    min-height: 100vh;
+    margin: 0;
+    padding: 32px 20px;
+    background:
+        radial-gradient(circle at 12% 12%, rgba(227, 107, 69, .16), transparent 28%),
+        radial-gradient(circle at 88% 88%, rgba(27, 122, 120, .15), transparent 30%),
+        #f4eee5;
+}
+
+main {
+    width: min(100%, 620px);
+    margin: 64px auto 0;
+    padding: clamp(28px, 5vw, 48px);
+    background: rgba(255, 253, 248, .94);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    box-shadow: 0 24px 60px rgba(58, 42, 27, .12);
+    animation: appear .45s ease-out both;
+}
+
+h1 {
+    margin: 0 0 10px;
+    font-family: Georgia, serif;
+    font-size: clamp(2rem, 5vw, 3rem);
+    line-height: 1.05;
+    letter-spacing: 0;
+}
+
+p { color: var(--muted); }
+
+.voltar {
+    display: inline-block;
+    color: var(--teal);
+    font-weight: 700;
+    text-decoration: none;
+}
+
+.voltar:hover { color: var(--accent-dark); }
+
+form { display: grid; gap: 18px; margin-top: 28px; }
+
+label {
+    display: grid;
+    gap: 8px;
+    color: var(--ink);
+    font-size: .9rem;
+    font-weight: 700;
+    letter-spacing: .03em;
+    text-transform: uppercase;
+}
+
+input, select, button {
+    width: 100%;
+    padding: 13px 14px;
+    border: 1px solid #cfc3b5;
+    border-radius: 5px;
+    background: #fff;
+    color: var(--ink);
+    font: inherit;
+    font-size: 1rem;
+}
+
+input:focus, select:focus {
+    outline: 3px solid rgba(27, 122, 120, .16);
+    border-color: var(--teal);
+}
+
+button {
+    border: 0;
+    background: var(--accent);
+    color: #fff;
+    cursor: pointer;
+    font-weight: 700;
+    transition: background .2s ease, transform .2s ease;
+}
+
+button:hover { background: var(--accent-dark); transform: translateY(-1px); }
+
+#status { min-height: 1.5em; color: var(--muted); }
+.erro { color: var(--danger) !important; }
+.sucesso { color: var(--teal) !important; }
+
+.menu-container { position: fixed; top: 24px; left: 24px; z-index: 2; }
+.menu-botao {
+    width: 48px;
+    height: 48px;
+    padding: 0;
+    border: 1px solid var(--line);
+    border-radius: 5px;
+    background: var(--paper);
+    color: var(--ink);
+    font-size: 1.5rem;
+}
+.menu-opcoes {
+    display: none;
+    width: 230px;
+    margin-top: 8px;
+    padding: 8px;
+    border: 1px solid var(--line);
+    border-radius: 5px;
+    background: var(--paper);
+    box-shadow: 0 18px 40px rgba(58, 42, 27, .14);
+}
+.menu-opcoes.aberto { display: grid; gap: 4px; }
+.menu-opcoes a {
+    padding: 11px 12px;
+    color: var(--ink);
+    text-decoration: none;
+}
+.menu-opcoes a:hover { background: #f4eee5; color: var(--accent-dark); }
+
+ul { display: grid; gap: 10px; padding: 12px 0 0; list-style: none; }
+li { animation: appear .35s ease-out both; }
+li a {
+    display: flex;
+    justify-content: space-between;
+    padding: 15px 16px;
+    border: 1px solid var(--line);
+    border-radius: 5px;
+    background: #fff;
+    color: var(--teal);
+    font-size: 1.08rem;
+    font-weight: 700;
+    text-decoration: none;
+    transition: border-color .2s ease, transform .2s ease;
+}
+li a::after { content: "→"; color: var(--accent); }
+li a:hover { border-color: var(--accent); transform: translateX(4px); }
+
+dl { margin: 28px 0 0; }
+dt { margin-top: 22px; color: var(--muted); font-size: .85rem; font-weight: 700; text-transform: uppercase; }
+dd { margin: 5px 0 0; font-family: Georgia, serif; font-size: 1.45rem; font-weight: 700; }
+
+@keyframes appear { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+@media (max-width: 560px) {
+    body { padding: 24px 14px; }
+    .menu-container { top: 14px; left: 14px; }
+    main { margin-top: 58px; }
+}

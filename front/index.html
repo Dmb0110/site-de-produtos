@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Produtos | Projeto 5</title>
+    <style>
+        :root {
+            color-scheme: light;
+            font-family: Arial, sans-serif;
+            background: #f4f7fb;
+            color: #172033;
+        }
+
+        body {
+            margin: 0;
+            min-height: 100vh;
+            display: grid;
+            place-items: center;
+            padding: 24px;
+            box-sizing: border-box;
+        }
+
+        .menu-container {
+            position: fixed;
+            top: 24px;
+            left: 24px;
+            z-index: 2;
+        }
+
+        .menu-botao {
+            width: 48px;
+            height: 48px;
+            border: 1px solid #dce3ee;
+            border-radius: 8px;
+            background: #ffffff;
+            color: #172033;
+            font-size: 1.5rem;
+            cursor: pointer;
+        }
+
+        .menu-opcoes {
+            display: none;
+            width: 220px;
+            margin-top: 8px;
+            padding: 8px;
+            background: #ffffff;
+            border: 1px solid #dce3ee;
+            border-radius: 8px;
+            box-shadow: 0 12px 32px rgba(23, 32, 51, 0.12);
+        }
+
+        .menu-opcoes.aberto {
+            display: grid;
+            gap: 4px;
+        }
+
+        .menu-opcoes a {
+            display: block;
+            padding: 10px;
+            color: #172033;
+            font-size: 1rem;
+            text-decoration: none;
+        }
+
+        .menu-opcoes a:hover {
+            background: #f4f7fb;
+        }
+
+        main {
+            width: min(92%, 560px);
+            padding: 32px;
+            background: #ffffff;
+            border: 1px solid #dce3ee;
+            border-radius: 12px;
+            box-shadow: 0 12px 32px rgba(23, 32, 51, 0.08);
+        }
+
+        h1 {
+            margin-top: 0;
+        }
+
+        #status {
+            color: #5c667a;
+        }
+
+        ul {
+            padding-left: 0;
+            list-style: none;
+        }
+
+        li {
+            margin: 10px 0;
+        }
+
+        a {
+            color: #155eef;
+            font-size: 1.1rem;
+        }
+
+        .erro {
+            color: #b42318;
+        }
+    </style>
+    <link rel="stylesheet" href="/front/styles.css">
+</head>
+<body>
+    <div class="menu-container">
+        <button class="menu-botao" id="menu-botao" type="button" aria-label="Abrir menu" aria-expanded="false">&#9776;</button>
+        <nav class="menu-opcoes" id="menu-opcoes" aria-label="Opções de produtos">
+            <a href="/front/cadastrar.html">Cadastrar produto</a>
+            <a href="/front/editar.html">Trocar nome ou preço</a>
+            <a href="/front/deletar.html">Deletar produto</a>
+        </nav>
+    </div>
+
+    <main>
+        <h1>Produtos cadastrados</h1>
+        <p id="status">Carregando produtos...</p>
+        <ul id="lista-produtos"></ul>
+    </main>
+
+    <script>
+        const menuBotao = document.querySelector('#menu-botao');
+        const menuOpcoes = document.querySelector('#menu-opcoes');
+        const status = document.querySelector('#status');
+        const listaProdutos = document.querySelector('#lista-produtos');
+
+        menuBotao.addEventListener('click', () => {
+            const aberto = menuOpcoes.classList.toggle('aberto');
+            menuBotao.setAttribute('aria-expanded', aberto);
+        });
+
+        async function carregarProdutos() {
+            try {
+                listaProdutos.innerHTML = '';
+                const resposta = await fetch('http://127.0.0.1:5000/produtos');
+
+                if (!resposta.ok) {
+                    throw new Error(`A API respondeu com status ${resposta.status}.`);
+                }
+
+                const respostaJson = await resposta.json();
+                const produtos = Array.isArray(respostaJson)
+                    ? respostaJson
+                    : respostaJson.value || [];
+
+                if (produtos.length === 0) {
+                    status.textContent = 'Nenhum produto cadastrado.';
+                    return;
+                }
+
+                produtos.forEach((produto) => {
+                    const item = document.createElement('li');
+                    const link = document.createElement('a');
+                    const parametros = new URLSearchParams({
+                        id: produto.id,
+                        nome: produto.nome,
+                        preco: produto.preco,
+                    });
+
+                    link.href = `/front/index2.html?${parametros}`;
+                    link.textContent = produto.nome;
+                    item.appendChild(link);
+                    listaProdutos.appendChild(item);
+                });
+
+                status.textContent = `${produtos.length} produto(s) encontrado(s).`;
+            } catch (erro) {
+                status.textContent = 'Não foi possível carregar os produtos.';
+                status.classList.add('erro');
+                console.error(erro);
+            }
+        }
+
+        carregarProdutos();
+    </script>
+</body>
+</html>
