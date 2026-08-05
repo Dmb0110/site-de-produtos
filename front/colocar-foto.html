@@ -25,7 +25,7 @@
         <h1>Colocar foto</h1>
         <p id="status">Carregando produtos...</p>
         <form id="formulario" hidden>
-            <label for="produto">Produto sem foto
+            <label for="produto">Produto
                 <select id="produto" required></select>
             </label>
             <label for="foto">Foto
@@ -62,15 +62,17 @@
                 if (!resposta.ok) throw new Error('N\u00e3o foi poss\u00edvel carregar os produtos.');
 
                 const produtos = await resposta.json();
-                const produtosSemFoto = produtos.filter((produto) => !produto.foto);
                 produtoSelect.replaceChildren();
 
-                if (produtosSemFoto.length === 0) {
-                    mostrarSemProdutos();
+                if (produtos.length === 0) {
+                    status.hidden = false;
+                    status.textContent = 'Nenhum produto encontrado.';
+                    status.className = 'erro';
+                    formulario.hidden = true;
                     return;
                 }
 
-                produtosSemFoto.forEach((produto) => {
+                produtos.forEach((produto) => {
                     const opcao = document.createElement('option');
                     opcao.value = produto.id;
                     opcao.textContent = produto.nome;
