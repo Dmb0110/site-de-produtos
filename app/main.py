@@ -1,6 +1,5 @@
 import os
 import sys
-import traceback
 from pathlib import Path
 
 from dotenv import load_dotenv
@@ -13,7 +12,7 @@ ROOT_DIR = Path(__file__).resolve().parent.parent
 if str(ROOT_DIR) not in sys.path:
     sys.path.insert(0, str(ROOT_DIR))
 
-from app.database.core import db, init_app
+from app.database.core import db, init_app, mongo
 from app.routers.routers_produto import produto_bp
 
 app = Flask(__name__)
@@ -24,23 +23,21 @@ app.register_blueprint(produto_bp)
 
 @app.errorhandler(Exception)
 def handle_exception(error):
-    app.logger.exception("Erro não tratado durante requisição")
+    app.logger.exception("Erro nao tratado durante requisicao")
     if isinstance(error, HTTPException):
         return jsonify({"erro": error.description}), error.code
     return jsonify({"erro": "Erro interno do servidor"}), 500
 
-def inicializar_banco():
+
+def inicializar_bancos() -> None:
     with app.app_context():
-        try:
-            db.create_all()
-            print("Banco inicializado com sucesso.")
-        except Exception as exc:
-            print(f"Não foi possível inicializar o banco: {exc}")
-            traceback.print_exc()
-            print("A aplicação continuará funcionando, mas o banco ainda não está disponível.")
+        db.create_all()
+        mongo.db.command("ping")
+        mongo.db.fotos.create_index("product_id", unique=True, sparse=True)
 
 
-inicializar_banco()
+inicializar_bancos()
+
 
 @app.route("/", methods=["GET"])
 def ola():
@@ -63,15 +60,5 @@ def servir_pagina_html(filename):
     return send_from_directory(ROOT_DIR / "front", f"{filename}.html")
 
 
-if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=int(os.getenv('PORT', 5000)), debug=False)
-
-
-'''
-rodar para rodar o servidor:
-
-python main.py
- 
-python app/main.py
-
-'''
+if __name__ == "__main__":
+    app.run(host="0.0.0.0", port=int(os.getenv("PORT", 5000)), debug=False)

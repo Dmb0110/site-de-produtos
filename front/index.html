@@ -104,15 +104,23 @@
     </style>
     <link rel="stylesheet" href="/front/styles.css">
 </head>
-<body>
+<body class="pagina-produtos">
     <div class="menu-container">
         <button class="menu-botao" id="menu-botao" type="button" aria-label="Abrir menu" aria-expanded="false">&#9776;</button>
         <nav class="menu-opcoes" id="menu-opcoes" aria-label="Opções de produtos">
             <a href="/front/cadastrar.html">Cadastrar produto</a>
+            <a href="/front/colocar-foto.html">Colocar foto</a>
             <a href="/front/editar.html">Trocar nome ou preço</a>
             <a href="/front/deletar.html">Deletar produto</a>
         </nav>
     </div>
+
+    <header class="topo">
+        <form class="barra-busca" id="formulario-busca" role="search">
+            <input id="busca" type="search" placeholder="Buscar produtos" autocomplete="off" aria-label="Buscar produtos">
+            <button type="submit">Buscar</button>
+        </form>
+    </header>
 
     <main>
         <h1>Produtos cadastrados</h1>
@@ -120,52 +128,134 @@
         <ul id="lista-produtos"></ul>
     </main>
 
+    <style>
+        .produto-card {
+            display: grid;
+            gap: 10px;
+            padding: 16px;
+            border: 1px solid #e4ecf8;
+            border-radius: 14px;
+            background: #ffffff;
+            transition: transform 0.18s ease, box-shadow 0.18s ease;
+        }
+
+        .produto-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 14px 28px rgba(23, 32, 51, 0.08);
+        }
+
+        .produto-card img {
+            width: 100%;
+            height: 180px;
+            object-fit: cover;
+            border-radius: 12px;
+            background: #f4f7fb;
+        }
+
+        .produto-link {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: #172033;
+            text-decoration: none;
+        }
+
+        .produto-preco {
+            margin: 0;
+            color: #5c667a;
+            font-size: 1rem;
+        }
+    </style>
     <script>
         const menuBotao = document.querySelector('#menu-botao');
         const menuOpcoes = document.querySelector('#menu-opcoes');
         const status = document.querySelector('#status');
         const listaProdutos = document.querySelector('#lista-produtos');
+        const formularioBusca = document.querySelector('#formulario-busca');
+        const busca = document.querySelector('#busca');
+        let produtos = [];
 
         menuBotao.addEventListener('click', () => {
             const aberto = menuOpcoes.classList.toggle('aberto');
             menuBotao.setAttribute('aria-expanded', aberto);
         });
 
+        function normalizarTexto(valor) {
+            return String(valor)
+                .normalize('NFD')
+                .replace(/[\u0300-\u036f]/g, '')
+                .toLowerCase();
+        }
+
+        function mostrarProdutos(produtosFiltrados) {
+            listaProdutos.innerHTML = '';
+
+            if (produtosFiltrados.length === 0) {
+                status.textContent = produtos.length === 0
+                    ? 'Nenhum produto cadastrado.'
+                    : 'Nenhum produto encontrado.';
+                return;
+            }
+
+            produtosFiltrados.forEach((produto) => {
+                    const item = document.createElement('li');
+                    const card = document.createElement('article');
+                    card.className = 'produto-card';
+
+                    if (produto.foto) {
+                        const imagem = document.createElement('img');
+                        imagem.src = produto.foto;
+                        imagem.alt = produto.nome;
+                        card.appendChild(imagem);
+                    }
+
+                    const link = document.createElement('a');
+                    link.className = 'produto-link';
+                    link.href = `/front/index2.html?id=${produto.id}`;
+                    link.textContent = produto.nome;
+                    card.appendChild(link);
+
+                    const preco = document.createElement('p');
+                    preco.className = 'produto-preco';
+                    preco.textContent = `R$ ${Number(produto.preco).toFixed(2)}`;
+                    card.appendChild(preco);
+
+                    item.appendChild(card);
+                    listaProdutos.appendChild(item);
+            });
+
+            status.textContent = `${produtosFiltrados.length} produto(s) encontrado(s).`;
+        }
+
+        function filtrarProdutos() {
+            const termo = normalizarTexto(busca.value.trim());
+            const produtosFiltrados = termo
+                ? produtos.filter((produto) => normalizarTexto(produto.nome).includes(termo))
+                : produtos;
+            mostrarProdutos(produtosFiltrados);
+        }
+
+        formularioBusca.addEventListener('submit', (evento) => {
+            evento.preventDefault();
+            filtrarProdutos();
+        });
+
+        busca.addEventListener('input', filtrarProdutos);
+
         async function carregarProdutos() {
             try {
-                listaProdutos.innerHTML = '';
-                const resposta = await fetch('http://127.0.0.1:5000/produtos');
+                const resposta = await fetch('/produtos');
 
                 if (!resposta.ok) {
                     throw new Error(`A API respondeu com status ${resposta.status}.`);
                 }
 
-                const respostaJson = await resposta.json();
-                const produtos = Array.isArray(respostaJson)
-                    ? respostaJson
-                    : respostaJson.value || [];
+                produtos = await resposta.json();
 
-                if (produtos.length === 0) {
-                    status.textContent = 'Nenhum produto cadastrado.';
-                    return;
+                if (!Array.isArray(produtos)) {
+                    throw new Error('A API retornou uma resposta inv\u00e1lida.');
                 }
 
-                produtos.forEach((produto) => {
-                    const item = document.createElement('li');
-                    const link = document.createElement('a');
-                    const parametros = new URLSearchParams({
-                        id: produto.id,
-                        nome: produto.nome,
-                        preco: produto.preco,
-                    });
-
-                    link.href = `/front/index2.html?${parametros}`;
-                    link.textContent = produto.nome;
-                    item.appendChild(link);
-                    listaProdutos.appendChild(item);
-                });
-
-                status.textContent = `${produtos.length} produto(s) encontrado(s).`;
+                filtrarProdutos();
             } catch (erro) {
                 status.textContent = 'Não foi possível carregar os produtos.';
                 status.classList.add('erro');

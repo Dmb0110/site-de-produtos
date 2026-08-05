@@ -38,7 +38,7 @@
 
         async function carregarProdutos() {
             try {
-                const resposta = await fetch('http://127.0.0.1:5000/produtos');
+                const resposta = await fetch('/produtos');
                 if (!resposta.ok) throw new Error('Não foi possível carregar os produtos.');
                 const produtos = await resposta.json();
 
@@ -70,7 +70,7 @@
             status.textContent = 'Deletando...';
 
             try {
-                const resposta = await fetch(`http://127.0.0.1:5000/produtos/${produtoSelect.value}`, {
+                const resposta = await fetch(`/produtos/${produtoSelect.value}`, {
                     method: 'DELETE',
                 });
                 if (!resposta.ok) throw new Error('Não foi possível deletar o produto.');

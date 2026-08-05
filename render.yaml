@@ -12,6 +12,8 @@ services:
         fromDatabase:
           name: banco-1
           property: connectionString
+      - key: MONGODB_URI
+        value: "mongodb://<usuario>:<senha>@<host>:<porta>/<database>"
 
 databases:
   - name: banco-1

@@ -60,6 +60,9 @@
     <main>
         <h1>Detalhes do produto</h1>
         <p id="status">Carregando...</p>
+        <div id="foto-container" hidden>
+            <img id="produto-foto" alt="Foto do produto">
+        </div>
         <dl id="detalhes" hidden>
             <dt>Nome</dt>
             <dd id="nome"></dd>
@@ -71,32 +74,39 @@
     <script>
         const status = document.querySelector('#status');
         const detalhes = document.querySelector('#detalhes');
+        const fotoContainer = document.querySelector('#foto-container');
+        const produtoFoto = document.querySelector('#produto-foto');
         const parametros = new URLSearchParams(window.location.search);
         const produtoId = parametros.get('id');
-        const nome = parametros.get('nome');
-        const preco = parametros.get('preco');
 
         async function carregarDetalhes() {
-            if (!produtoId || !nome || preco === null) {
+            if (!produtoId) {
                 status.textContent = 'Produto inválido.';
                 status.classList.add('erro');
                 return;
             }
 
             try {
-                const resposta = await fetch(`http://127.0.0.1:5000/produtos/${produtoId}`, {
-                    method: 'PUT',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({ nome, preco: Number(preco) }),
-                });
+                const resposta = await fetch(`/produtos/${produtoId}`);
 
                 if (!resposta.ok) {
                     throw new Error(`A API respondeu com status ${resposta.status}.`);
                 }
 
                 const produto = await resposta.json();
+
+                if (!produto || produto.erro) {
+                    status.textContent = produto?.erro || 'Produto não encontrado.';
+                    status.classList.add('erro');
+                    return;
+                }
+
+                if (produto.foto) {
+                    produtoFoto.src = produto.foto;
+                    produtoFoto.alt = produto.nome;
+                    fotoContainer.hidden = false;
+                }
+
                 document.querySelector('#nome').textContent = produto.nome;
                 document.querySelector('#preco').textContent = `R$ ${Number(produto.preco).toFixed(2)}`;
                 status.hidden = true;
@@ -110,5 +120,7 @@
 
         carregarDetalhes();
     </script>
+</body>
+</html>
 </body>
 </html>

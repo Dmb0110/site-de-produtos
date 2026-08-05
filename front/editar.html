@@ -55,7 +55,7 @@
 
         async function carregarProdutos() {
             try {
-                const resposta = await fetch('http://127.0.0.1:5000/produtos');
+                const resposta = await fetch('/produtos');
                 if (!resposta.ok) throw new Error('Não foi possível carregar os produtos.');
                 produtos = await resposta.json();
 
@@ -87,7 +87,7 @@
             status.textContent = 'Salvando...';
 
             try {
-                const resposta = await fetch(`http://127.0.0.1:5000/produtos/${produtoSelect.value}`, {
+                const resposta = await fetch(`/produtos/${produtoSelect.value}`, {
                     method: 'PUT',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ nome: nomeInput.value.trim(), preco: Number(precoInput.value) }),
