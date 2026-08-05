@@ -12,11 +12,16 @@ mongo = PyMongo()
 
 
 def init_app(app: Flask) -> None:
-    database_url = os.getenv("DATABASE_URL", "").strip()
+    database_url = (
+        os.getenv("DATABASE_URI", "").strip()
+        or os.getenv("DATABASE_URL", "").strip()
+    )
     mongodb_uri = os.getenv("MONGODB_URI", "").strip()
 
     if not database_url:
-        raise RuntimeError("A variavel DATABASE_URL nao foi configurada.")
+        raise RuntimeError(
+            "A variavel DATABASE_URI ou DATABASE_URL nao foi configurada."
+        )
     if not mongodb_uri:
         raise RuntimeError("A variavel MONGODB_URI nao foi configurada.")
 

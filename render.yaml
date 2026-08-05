@@ -8,15 +8,7 @@ services:
     envVars:
       - key: PYTHON_VERSION
         value: 3.11.0
-      - key: DATABASE_URL
-        fromDatabase:
-          name: banco-1
-          property: connectionString
+      - key: DATABASE_URI
+        value: "postgresql://<usuario>:<senha>@<host>:<porta>/<database>?sslmode=require&channel_binding=require"
       - key: MONGODB_URI
         value: "mongodb://<usuario>:<senha>@<host>:<porta>/<database>"
-
-databases:
-  - name: banco-1
-    plan: free
-    databaseName: banco 1
-    user: projeto5
